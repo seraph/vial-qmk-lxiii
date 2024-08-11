@@ -44,6 +44,7 @@ KC_LCTL,  KC_LSFT,  KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                   
   )
 };
 
+// OLED is rotated 90 to the vertical
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
         return OLED_ROTATION_90;  // flips the display 180 degrees if offhand
 
@@ -52,33 +53,54 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 #ifdef OLED_ENABLE
 bool oled_task_user(void) {
-    // Host Keyboard Layer Status
-    oled_write_ln_P(PSTR("LXIII"), false);
-    oled_write_ln_P(PSTR(""), false);
+    // START LAYER
+    oled_write_ln_P(PSTR("LAYER"), false);
 
     switch (get_highest_layer(layer_state)) {
         case _QWERTY:
             oled_write_ln_P(PSTR("BASE"), false);
             break;
         case _MO1:
-            oled_write_ln_P(PSTR("MODE1"), false);
+            oled_write_ln_P(PSTR("ONE"), false);
             break;
         case _MO2:
-            oled_write_ln_P(PSTR("MODE2"), false);
+            oled_write_ln_P(PSTR("TWO"), false);
             break;
         case _MO3:
-            oled_write_ln_P(PSTR("MODE3"), false);
+            oled_write_ln_P(PSTR("THREE"), false);
             break;
         default:
-            // Or use the write_ln shortcut over adding '\n' to the end of your string
-            oled_write_ln_P(PSTR("UNDEF"), false);
+            oled_write_ln_P(PSTR("FOUR"), false);
     }
 
-    // Host Keyboard LED Status
+    oled_write_P(PSTR("\n\n"), false);
+    // END LAYER
+
+    // Deal with status "lights"
     led_t led_state = host_keyboard_led_state();
-    oled_write_ln_P(led_state.num_lock ? PSTR("NUMLK") : PSTR("    "), false);
-    oled_write_ln_P(led_state.caps_lock ? PSTR("CAPLK") : PSTR("    "), false);
-    oled_write_ln_P(led_state.scroll_lock ? PSTR("SCRLK") : PSTR("    "), false);
+
+    oled_write_P(PSTR("CAP "), false);
+    oled_write_char(led_state.caps_lock ? 0x9e : 0x9d, false);
+    oled_write_P(PSTR("\n"), false);
+
+    // Deal with modifier status
+    uint8_t mod_state = get_mods();
+
+    oled_write_P(PSTR("SFT "), false);
+    oled_write_char(mod_state & MOD_MASK_SHIFT ? 0x9e : 0x9d, false);
+    oled_write_P(PSTR("\n"), false);
+
+    oled_write_P(PSTR("CTL "), false);
+    oled_write_char(mod_state & MOD_MASK_CTRL ? 0x9e : 0x9d, false);
+    oled_write_P(PSTR("\n"), false);
+
+    oled_write_P(PSTR("ALT "), false);
+    oled_write_char(mod_state & MOD_MASK_ALT ? 0x9e : 0x9d, false);
+    oled_write_P(PSTR("\n"), false);
+
+    oled_write_P(PSTR("GUI "), false);
+    oled_write_char(mod_state & MOD_MASK_GUI ? 0x9e : 0x9d, false);
+    oled_write_P(PSTR("\n"), false);
     
     return false;
 }
